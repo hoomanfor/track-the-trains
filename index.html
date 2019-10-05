@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-database.js"></script>
+    <title>Track the Trains</title>
+  </head>
+  <body>
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Jumbotron -->
+        <div class="jumbotron p-4 m-0">
+            <h1 class="display-4">Track the Trains</h1>
+            <p class="lead">Congratulations! You have become a public transit authority. Use this App to track the trains!</p>
+        </div>
+        <!-- Current Train Schedule -->
+        <div class="card my-2">
+            <div class="card-header font-weight-bold">
+                Current Train Schedule
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Train Name</th>
+                            <th>Destination</th>
+                            <th>Frequency (min)</th>
+                            <th>Next Arrival</th>
+                            <th>Minutes Away</th>
+                        </tr>
+                    </thead>
+                    <tbody id="add-row"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Add Train -->
+        <div class="card">
+            <div class="card-header font-weight-bold">
+                Add Train
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="form-group">
+                        <label>Train Name</label>
+                        <input id="train-name" class="form-control" type="text" placeholder="e.g. Hot Springs Special">
+                    </div>
+                    <div class="form-group">
+                        <label>Destination</label>
+                        <input id="destination" class="form-control" type="text" placeholder="e.g. Portland, Maine">
+                    </div>
+                    <div class="form-group">
+                        <label>First Arrival Time (HH:mm - 24-hour clock)</label>
+                        <input id="first-arrival" class="form-control" type="text" placeholder="e.g. 14:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency (min)</label>
+                        <input id="monthly-rate" class="form-control" type="number" placeholder="e.g. 5">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+        
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- App Logic -->
+    <script src="assets/javascript/app.js"></script>
+  </body>
+</html>
