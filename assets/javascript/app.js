@@ -10,3 +10,26 @@ var firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
+// var database = firebase.ref()
+
+$("#submit").on("click", function(event) {
+    event.preventDefault();
+    var trainName = $("#train-name").val().trim();
+    console.log(trainName);
+    var destination = $("#destination").val().trim();
+    console.log(destination);
+    var firstArrival = $("#first-arrival").val().trim();
+    console.log(firstArrival);
+    var frequency = $("#frequency").val().trim();
+    console.log(frequency);
+
+    var arrivalTimeConverted = moment(firstArrival, "HH:mm").subtract(1, "years");
+    var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
+    var timeRemainder = timeDifference % frequency;
+    var minutesAway = frequency - timeRemainder;
+    console.log("minutesAway", minutesAway);
+    var nextArrival = moment().add(minutesAway, "minutes");
+    console.log("nextArrival", nextArrival.format("HH:mm"));
+});
+
