@@ -11,25 +11,54 @@ var firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// var database = firebase.ref()
+var database = firebase.database()
 
 $("#submit").on("click", function(event) {
     event.preventDefault();
     var trainName = $("#train-name").val().trim();
-    console.log(trainName);
     var destination = $("#destination").val().trim();
-    console.log(destination);
     var firstArrival = $("#first-arrival").val().trim();
-    console.log(firstArrival);
     var frequency = $("#frequency").val().trim();
-    console.log(frequency);
 
     var arrivalTimeConverted = moment(firstArrival, "HH:mm").subtract(1, "years");
     var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
     var timeRemainder = timeDifference % frequency;
     var minutesAway = frequency - timeRemainder;
-    console.log("minutesAway", minutesAway);
     var nextArrival = moment().add(minutesAway, "minutes");
-    console.log("nextArrival", nextArrival.format("HH:mm"));
+    nextArrival = nextArrival.format("HH:mm");
+
+    var train = {
+        name: trainName,
+        destination: destination,
+        frequency: frequency,
+        next_arrival: nextArrival,
+        minutes_away: minutesAway,
+        date_added: firebase.database.ServerValue.TIMESTAMP
+    }
+    console.log(train);
+    
+    database.ref().push({train});
+
 });
+
+database.ref().on("child_added", function(snapshot) {
+    console.log(snapshot.val());
+    var row = $("<tr>");
+    var name = $("<td>");
+    var destination = $("<td>");
+    var frequency = $("<td>");
+    var nextArrival = $("<td>");
+    var minutesAway = $("<td>");
+    name.text(snapshot.val().train.name);
+    destination.text(snapshot.val().train.destination);
+    frequency.text(snapshot.val().train.frequency);
+    nextArrival.text(snapshot.val().train.next_arrival);
+    minutesAway.text(snapshot.val().train.minutes_away);
+    row.append(name, destination, frequency, nextArrival, minutesAway);
+    $("#add-row").append(row);
+}, function(errorObject) {
+    console.log("errorObject.code: " + errorObject.code);
+});
+
+
 
