@@ -37,12 +37,19 @@ $("#submit").on("click", function(event) {
     }
     console.log(train);
     
-    database.ref().push({train});
+    database.ref().push({train}).then(function(snapshot){
+        console.log(snapshot.key)
+    })
+
+    var trainName = $("#train-name").val("");
+    var destination = $("#destination").val("");
+    var firstArrival = $("#first-arrival").val("");
+    var frequency = $("#frequency").val("");
 
 });
 
 database.ref().on("child_added", function(snapshot) {
-    console.log(snapshot.val());
+    console.log(snapshot.key);
     var row = $("<tr>");
     var name = $("<td>");
     var destination = $("<td>");
@@ -59,6 +66,5 @@ database.ref().on("child_added", function(snapshot) {
 }, function(errorObject) {
     console.log("errorObject.code: " + errorObject.code);
 });
-
 
 
