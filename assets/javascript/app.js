@@ -12,7 +12,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database()
-var keysArr = [];
+
 
 $("#submit").on("click", function(event) {
     event.preventDefault();
@@ -25,8 +25,9 @@ $("#submit").on("click", function(event) {
     var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
     var timeRemainder = timeDifference % frequency;
     var minutesAway = frequency - timeRemainder;
+    console.log(minutesAway)
     var nextArrival = moment().add(minutesAway, "minutes");
-    nextArrival = nextArrival.format("HH:mm");
+    nextArrival = nextArrival.format("HH:mm"); 
     
     database.ref("trains").push({
         name: trainName,
@@ -35,7 +36,24 @@ $("#submit").on("click", function(event) {
         next_arrival: nextArrival,
         minutes_away: minutesAway,
         date_added: firebase.database.ServerValue.TIMESTAMP
-    })
+    }).then(function(snapshot) {
+        var trainKey = snapshot.key
+        var decrement = setInterval(function() {
+            if (minutesAway > 0) {
+                minutesAway--; 
+                console.log(minutesAway)
+                nextArrival = moment().add(minutesAway, "minutes");
+                nextArrival = nextArrival.format("HH:mm"); 
+                console.log(nextArrival)
+                database.ref("trains/" + trainKey).update({
+                    next_arrival: nextArrival,
+                    minutes_away: minutesAway
+                })
+            } else {
+                clearInterval(decrement);
+            }
+        }, 2000);
+    });
 
     var trainName = $("#train-name").val("");
     var destination = $("#destination").val("");
@@ -45,7 +63,7 @@ $("#submit").on("click", function(event) {
 });
 
 database.ref("trains").on("child_added", function(snapshot) {
-    console.log(snapshot.val())
+    console.log("LOOK!", snapshot.val())
     var row = $("<tr>");
     var name = $("<td>");
     var destination = $("<td>");
@@ -63,12 +81,27 @@ database.ref("trains").on("child_added", function(snapshot) {
     console.log("errorObject.code: " + errorObject.code);
 });
 
-console.log(keysArr)
+// database.ref("trains/-LqX6bWwvMDm9zIX3-er").on("value", function(snapshot) {
+//     console.log("LOOK 2!", snapshot.val());
+// }, function(errorObject) {
+//     console.log("errorObject.code: " + errorObject.code)
+// }); 
 
-database.ref().on("value", function(snapshot) {
-    console.log(snapshot.val());
-}, function(errorObject) {
-    console.log("errorObject.code: " + errorObject.code)
-}); 
+// ----
+// This is how I will update values in the database.
+// database.ref("trains/-LqX6bWwvMDm9zIX3-er").update({
+//     name: "Test 2",
+// });
+// ----
+
+// ----
+// This is a promise after the initial push
+// .then(function(snapshot) {
+//     console.log(snapshot.key)
+//     database.ref("trains/" + snapshot.key).update({
+//         name: "Child Changed Works!"
+//     })
+// })
+// ----
 
 
