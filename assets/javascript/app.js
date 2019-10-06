@@ -12,6 +12,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database()
+var keysArr = [];
 
 $("#submit").on("click", function(event) {
     event.preventDefault();
@@ -26,19 +27,14 @@ $("#submit").on("click", function(event) {
     var minutesAway = frequency - timeRemainder;
     var nextArrival = moment().add(minutesAway, "minutes");
     nextArrival = nextArrival.format("HH:mm");
-
-    var train = {
+    
+    database.ref("trains").push({
         name: trainName,
         destination: destination,
         frequency: frequency,
         next_arrival: nextArrival,
         minutes_away: minutesAway,
         date_added: firebase.database.ServerValue.TIMESTAMP
-    }
-    console.log(train);
-    
-    database.ref().push({train}).then(function(snapshot){
-        console.log(snapshot.key)
     })
 
     var trainName = $("#train-name").val("");
@@ -48,23 +44,31 @@ $("#submit").on("click", function(event) {
 
 });
 
-database.ref().on("child_added", function(snapshot) {
-    console.log(snapshot.key);
+database.ref("trains").on("child_added", function(snapshot) {
+    console.log(snapshot.val())
     var row = $("<tr>");
     var name = $("<td>");
     var destination = $("<td>");
     var frequency = $("<td>");
     var nextArrival = $("<td>");
     var minutesAway = $("<td>");
-    name.text(snapshot.val().train.name);
-    destination.text(snapshot.val().train.destination);
-    frequency.text(snapshot.val().train.frequency);
-    nextArrival.text(snapshot.val().train.next_arrival);
-    minutesAway.text(snapshot.val().train.minutes_away);
+    name.text(snapshot.val().name);
+    destination.text(snapshot.val().destination);
+    frequency.text(snapshot.val().frequency);
+    nextArrival.text(snapshot.val().next_arrival);
+    minutesAway.text(snapshot.val().minutes_away);
     row.append(name, destination, frequency, nextArrival, minutesAway);
     $("#add-row").append(row);
 }, function(errorObject) {
     console.log("errorObject.code: " + errorObject.code);
 });
+
+console.log(keysArr)
+
+database.ref().on("value", function(snapshot) {
+    console.log(snapshot.val());
+}, function(errorObject) {
+    console.log("errorObject.code: " + errorObject.code)
+}); 
 
 
