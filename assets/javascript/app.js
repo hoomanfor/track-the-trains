@@ -13,6 +13,29 @@ firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database()
 
+function displayData() {
+    $("#add-row").empty();
+    database.ref("trains").on("child_added", function(snapshot) {
+        console.log(snapshot.val())
+        var row = $("<tr>");
+        var name = $("<td>");
+        var destination = $("<td>");
+        var frequency = $("<td>");
+        var nextArrival = $("<td>");
+        var minutesAway = $("<td>");
+        name.text(snapshot.val().name);
+        destination.text(snapshot.val().destination);
+        frequency.text(snapshot.val().frequency);
+        nextArrival.text(snapshot.val().next_arrival);
+        minutesAway.text(snapshot.val().minutes_away);
+        row.append(name, destination, frequency, nextArrival, minutesAway);
+        $("#add-row").append(row);
+    }, function(errorObject) {
+        console.log("errorObject.code: " + errorObject.code);
+    });
+}
+
+displayData();
 
 $("#submit").on("click", function(event) {
     event.preventDefault();
@@ -20,12 +43,12 @@ $("#submit").on("click", function(event) {
     var destination = $("#destination").val().trim();
     var firstArrival = $("#first-arrival").val().trim();
     var frequency = $("#frequency").val().trim();
+    var remainFrequency = frequency;
 
     var arrivalTimeConverted = moment(firstArrival, "HH:mm").subtract(1, "years");
     var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
     var timeRemainder = timeDifference % frequency;
     var minutesAway = frequency - timeRemainder;
-    console.log(minutesAway)
     var nextArrival = moment().add(minutesAway, "minutes");
     nextArrival = nextArrival.format("HH:mm"); 
     
@@ -41,16 +64,18 @@ $("#submit").on("click", function(event) {
         var decrement = setInterval(function() {
             if (minutesAway > 0) {
                 minutesAway--; 
-                console.log(minutesAway)
-                nextArrival = moment().add(minutesAway, "minutes");
-                nextArrival = nextArrival.format("HH:mm"); 
-                console.log(nextArrival)
+                console.log("IF! minutesAway", minutesAway)
                 database.ref("trains/" + trainKey).update({
-                    next_arrival: nextArrival,
                     minutes_away: minutesAway
-                })
+                });
+                displayData();
             } else {
-                clearInterval(decrement);
+                nextArrival = moment().add(remainFrequency, "minutes");
+                nextArrival = nextArrival.format("HH:mm"); 
+                database.ref("trains/" + trainKey).update({
+                    next_arrival: nextArrival
+                });
+                displayData();
             }
         }, 2000);
     });
@@ -62,24 +87,7 @@ $("#submit").on("click", function(event) {
 
 });
 
-database.ref("trains").on("child_added", function(snapshot) {
-    console.log("LOOK!", snapshot.val())
-    var row = $("<tr>");
-    var name = $("<td>");
-    var destination = $("<td>");
-    var frequency = $("<td>");
-    var nextArrival = $("<td>");
-    var minutesAway = $("<td>");
-    name.text(snapshot.val().name);
-    destination.text(snapshot.val().destination);
-    frequency.text(snapshot.val().frequency);
-    nextArrival.text(snapshot.val().next_arrival);
-    minutesAway.text(snapshot.val().minutes_away);
-    row.append(name, destination, frequency, nextArrival, minutesAway);
-    $("#add-row").append(row);
-}, function(errorObject) {
-    console.log("errorObject.code: " + errorObject.code);
-});
+
 
 // database.ref("trains/-LqX6bWwvMDm9zIX3-er").on("value", function(snapshot) {
 //     console.log("LOOK 2!", snapshot.val());
