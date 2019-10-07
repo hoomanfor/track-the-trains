@@ -13,37 +13,55 @@ firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database()
 
-function displayData() {
-    $("#add-row").empty();
-    database.ref("trains").on("child_added", function(snapshot) {
-        console.log(snapshot.val())
-        var row = $("<tr>");
-        var name = $("<td>");
-        var destination = $("<td>");
-        var frequency = $("<td>");
-        var nextArrival = $("<td>");
-        var minutesAway = $("<td>");
-        name.text(snapshot.val().name);
-        destination.text(snapshot.val().destination);
-        frequency.text(snapshot.val().frequency);
-        nextArrival.text(snapshot.val().next_arrival);
-        minutesAway.text(snapshot.val().minutes_away);
-        row.append(name, destination, frequency, nextArrival, minutesAway);
-        $("#add-row").append(row);
-    }, function(errorObject) {
-        console.log("errorObject.code: " + errorObject.code);
-    });
-}
+// function displayData() {
+//     $("#add-row").empty();
+//     database.ref("trains").on("child_added", function(snapshot) {
+//         // console.log(snapshot.val())
+//         var row = $("<tr>");
+//         var name = $("<td>");
+//         var destination = $("<td>");
+//         var frequency = $("<td>");
+//         var nextArrival = $("<td>");
+//         var minutesAway = $("<td>");
+//         name.text(snapshot.val().name);
+//         destination.text(snapshot.val().destination);
+//         frequency.text(snapshot.val().frequency);
+//         nextArrival.text(snapshot.val().next_arrival);
+//         minutesAway.text(snapshot.val().minutes_away);
+//         row.append(name, destination, frequency, nextArrival, minutesAway);
+//         $("#add-row").append(row);
+//         }, function(errorObject) {
+//             console.log("errorObject.code: " + errorObject.code);
+//     });
+// }
 
-displayData();
+
+// database.ref("trains").on("child_added", function(snapshot) {
+//     var trainKey = snapshot.key
+//     var newArrival = snapshot.val().next_arrival;
+//     var minutesAway = snapshot.val().minutes_away;
+//     var decrement = setInterval(function() {
+//         if (minutesAway > 0) {
+//             minutesAway--; 
+//             console.log("IF! minutesAway", minutesAway)
+//             database.ref("trains/" + trainKey).update({
+//                 minutes_away: minutesAway
+//             });
+//             displayData()
+//         } else {
+//             clearInterval(decrement);
+//         }
+//     }, 2000);
+// });
+
+// displayData()
 
 $("#submit").on("click", function(event) {
     event.preventDefault();
     var trainName = $("#train-name").val().trim();
     var destination = $("#destination").val().trim();
     var firstArrival = $("#first-arrival").val().trim();
-    var frequency = $("#frequency").val().trim();
-    var remainFrequency = frequency;
+    var frequency = parseInt($("#frequency").val().trim());
 
     var arrivalTimeConverted = moment(firstArrival, "HH:mm").subtract(1, "years");
     var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
@@ -59,35 +77,22 @@ $("#submit").on("click", function(event) {
         next_arrival: nextArrival,
         minutes_away: minutesAway,
         date_added: firebase.database.ServerValue.TIMESTAMP
-    }).then(function(snapshot) {
-        var trainKey = snapshot.key
-        var decrement = setInterval(function() {
-            if (minutesAway > 0) {
-                minutesAway--; 
-                console.log("IF! minutesAway", minutesAway)
-                database.ref("trains/" + trainKey).update({
-                    minutes_away: minutesAway
-                });
-                displayData();
-            } else {
-                nextArrival = moment().add(remainFrequency, "minutes");
-                nextArrival = nextArrival.format("HH:mm"); 
-                database.ref("trains/" + trainKey).update({
-                    next_arrival: nextArrival
-                });
-                displayData();
-            }
-        }, 2000);
     });
 
     var trainName = $("#train-name").val("");
     var destination = $("#destination").val("");
     var firstArrival = $("#first-arrival").val("");
     var frequency = $("#frequency").val("");
-
 });
 
 
+
+
+// ----
+
+var now = moment(); 
+console.log(now)
+// ----
 
 // database.ref("trains/-LqX6bWwvMDm9zIX3-er").on("value", function(snapshot) {
 //     console.log("LOOK 2!", snapshot.val());
@@ -110,6 +115,25 @@ $("#submit").on("click", function(event) {
 //         name: "Child Changed Works!"
 //     })
 // })
+// ----
+
+// ----
+// This is my initial promise for counting down minutes away and updating the database:
+// .then(function(snapshot) {
+//     var trainKey = snapshot.key
+//     var decrement = setInterval(function() {
+//         if (minutesAway > 0) {
+//             minutesAway--; 
+//             console.log("IF! minutesAway", minutesAway)
+//             database.ref("trains/" + trainKey).update({
+//                 minutes_away: minutesAway
+//             });
+//             displayData();
+//         } else {
+//             clearInterval(decrement);
+//         }
+//     }, 2000);
+// });
 // ----
 
 
