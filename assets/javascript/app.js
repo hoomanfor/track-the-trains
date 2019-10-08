@@ -30,7 +30,7 @@ function displayData() {
         frequency.text(snapshot.val().frequency);
         nextArrival.text(snapshot.val().next_arrival);
         minutesAway.text(snapshot.val().minutes_away);
-        edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success'>Edit</button>")
+        edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success' data-toggle='modal' data-target='#exampleModal'>Edit</button>")
         remove.html("<button type='button' id='" + snapshot.key + "' class='btn btn-danger'>Remove</button>")
         row.append(name, destination, frequency, nextArrival, minutesAway, edit, remove);
         $("#add-row").append(row);
