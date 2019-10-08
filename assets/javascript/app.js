@@ -30,8 +30,8 @@ function displayData() {
         frequency.text(snapshot.val().frequency);
         nextArrival.text(snapshot.val().next_arrival);
         minutesAway.text(snapshot.val().minutes_away);
-        edit.html("<button type='button' class='btn btn-success'>Edit</button>")
-        remove.html("<button type='button' class='btn btn-danger'>Remove</button>")
+        edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success'>Edit</button>")
+        remove.html("<button type='button' id='" + snapshot.key + "' class='btn btn-danger'>Remove</button>")
         row.append(name, destination, frequency, nextArrival, minutesAway, edit, remove);
         $("#add-row").append(row);
         }, function(errorObject) {
@@ -71,7 +71,6 @@ database.ref("trains").on("child_added", function(snapshot) {
 });
 
 
-
 $("#submit").on("click", function(event) {
     event.preventDefault();
     var trainName = $("#train-name").val().trim();
@@ -100,6 +99,13 @@ $("#submit").on("click", function(event) {
     var firstArrival = $("#first-arrival").val("");
     var frequency = $("#frequency").val("");
 });
+
+$(document).on("click", ".btn-danger", function() {
+    console.log("This Works!");
+    var trainKey = $(this).attr("id");
+    database.ref("trains/" + trainKey).remove();
+    displayData()
+})
 
 
 
