@@ -16,19 +16,23 @@ var database = firebase.database()
 function displayData() {
     $("#add-row").empty();
     database.ref("trains").on("child_added", function(snapshot) {
-        // console.log(snapshot.val())
+        console.log("LOOK!", snapshot.key)
         var row = $("<tr>");
         var name = $("<td>");
         var destination = $("<td>");
         var frequency = $("<td>");
         var nextArrival = $("<td>");
         var minutesAway = $("<td>");
+        var edit = $("<td>");
+        var remove = $("<td>");
         name.text(snapshot.val().name);
         destination.text(snapshot.val().destination);
         frequency.text(snapshot.val().frequency);
         nextArrival.text(snapshot.val().next_arrival);
         minutesAway.text(snapshot.val().minutes_away);
-        row.append(name, destination, frequency, nextArrival, minutesAway);
+        edit.html("<button type='button' class='btn btn-success'>Edit</button>")
+        remove.html("<button type='button' class='btn btn-danger'>Remove</button>")
+        row.append(name, destination, frequency, nextArrival, minutesAway, edit, remove);
         $("#add-row").append(row);
         }, function(errorObject) {
             console.log("errorObject.code: " + errorObject.code);
