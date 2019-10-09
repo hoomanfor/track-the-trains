@@ -30,7 +30,7 @@ function displayData() {
         frequency.text(snapshot.val().frequency);
         nextArrival.text(snapshot.val().next_arrival);
         minutesAway.text(snapshot.val().minutes_away);
-        edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success' data-toggle='modal' data-target='#exampleModal'>Edit</button>")
+        edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success' data-toggle='modal' data-target='#update-modal'>Update</button>")
         remove.html("<button type='button' id='" + snapshot.key + "' class='btn btn-danger'>Remove</button>")
         row.append(name, destination, frequency, nextArrival, minutesAway, edit, remove);
         $("#add-row").append(row);
@@ -100,12 +100,51 @@ $("#submit").on("click", function(event) {
     var frequency = $("#frequency").val("");
 });
 
-$(document).on("click", ".btn-danger", function() {
+$(document).on("click", ".btn-danger", function(event) {
     console.log("This Works!");
     var trainKey = $(this).attr("id");
     database.ref("trains/" + trainKey).remove();
     displayData()
-})
+});
+
+$(document).on("click", ".btn-success", function(event) {
+    console.log("This Works!");
+    event.preventDefault();
+    var trainKey = $(this).attr("id");
+    console.log("trainKey", trainKey);
+    database.ref("trains/" + trainKey).once("value", function(snapshot) {
+        var frequency = snapshot.val().frequency;
+        console.log("UPDATE! frequency", frequency);
+        $(document).on("click", "#update-submit", function(event) {
+            console.log("This Works 2!")
+            event.preventDefault();
+            var trainName = $("#update-train-name").val().trim();
+            var destination = $("#update-destination").val().trim();
+            var updateArrival = $("#update-arrival").val().trim();
+            console.log("LOOK!!! =>", frequency);
+            console.log("trainName 2", trainName);
+            console.log("destination 2", destination);
+            console.log("updateArrival 2", updateArrival);
+            var arrivalTimeConverted = moment(updateArrival, "HH:mm").subtract(1, "years");
+            var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
+            var timeRemainder = timeDifference % frequency;
+            var minutesAway = frequency - timeRemainder;
+            var nextArrival = moment().add(minutesAway, "minutes");
+            nextArrival = nextArrival.format("HH:mm");
+            database.ref("trains/" + trainKey).update({
+                name: trainName,
+                destination: destination,
+                frequency: frequency,
+                next_arrival: nextArrival,
+                minutes_away: minutesAway
+            })
+            var trainName = $("#update-train-name").val("");
+            var destination = $("#update-destination").val("");
+            var updateArrival = $("#update-arrival").val("");
+            displayData()
+        })
+    })
+});
 
 
 
