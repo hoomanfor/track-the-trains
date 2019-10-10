@@ -13,65 +13,97 @@ firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database()
 
-function displayData() {
-    $("#add-row").empty();
-    database.ref("trains").on("child_added", function(snapshot) {
-        console.log("LOOK!", snapshot.key)
-        var row = $("<tr>");
-        var name = $("<td>");
-        var destination = $("<td>");
-        var frequency = $("<td>");
-        var nextArrival = $("<td>");
-        var minutesAway = $("<td>");
-        var edit = $("<td>");
-        var remove = $("<td>");
-        name.text(snapshot.val().name);
-        destination.text(snapshot.val().destination);
-        frequency.text(snapshot.val().frequency);
-        nextArrival.text(snapshot.val().next_arrival);
-        minutesAway.text(snapshot.val().minutes_away);
-        edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success' data-toggle='modal' data-target='#update-modal'>Update</button>")
-        remove.html("<button type='button' id='" + snapshot.key + "' class='btn btn-danger'>Remove</button>")
-        row.append(name, destination, frequency, nextArrival, minutesAway, edit, remove);
-        $("#add-row").append(row);
-        }, function(errorObject) {
-            console.log("errorObject.code: " + errorObject.code);
-    });
+function displayData(snapshot) {
+    // console.log("LOOK!", snapshot.key)
+    var row = $("<tr>");
+    var name = $("<td>");
+    var destination = $("<td>");
+    var frequency = $("<td>");
+    var nextArrival = $("<td>");
+    var minutesAway = $("<td>");
+    var edit = $("<td>");
+    var remove = $("<td>");
+    name.text(snapshot.val().name);
+    destination.text(snapshot.val().destination);
+    frequency.text(snapshot.val().frequency);
+    nextArrival.text(snapshot.val().next_arrival);
+    minutesAway.text(snapshot.val().minutes_away);
+    edit.html("<button type='button' id='" + snapshot.key + "' class='btn btn-success' data-toggle='modal' data-target='#update-modal'>Update</button>")
+    remove.html("<button type='button' id='" + snapshot.key + "' class='btn btn-danger'>Remove</button>")
+    row.append(name, destination, frequency, nextArrival, minutesAway, edit, remove);
+    $("#add-row").append(row);
 }
 
-displayData()
-
-database.ref("trains").on("child_added", function(snapshot) {
+function nextArrivals(snapshot) {
     var trainKey = snapshot.key
     var nextArrival = snapshot.val().next_arrival;
-    console.log("nextArrival", nextArrival);
+    // console.log("nextArrival", nextArrival);
     var frequency = snapshot.val().frequency; 
-    console.log("frequency", frequency);
+    // console.log("frequency", frequency);
     var minutesAway = snapshot.val().minutes_away;
     var decrement = setInterval(function() {
         if (minutesAway > 0) {
             minutesAway--; 
-            console.log("IF! minutesAway", minutesAway)
+            // console.log("IF! minutesAway", minutesAway)
             database.ref("trains/" + trainKey).update({
                 minutes_away: minutesAway
             })
-            displayData()
+            $("#add-row").empty();
+            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+            database.ref("trains").off("child_added", displayData);
         } else {
             minutesAway = frequency;
             nextArrival = moment(nextArrival, "HH:mm").add(frequency, "minutes");
             nextArrival = nextArrival.format("HH:mm")
-            console.log("newArrival", nextArrival);
+            // console.log("newArrival", nextArrival);
             database.ref("trains/" + trainKey).update({
                 minutes_away: minutesAway,
                 next_arrival: nextArrival
             })
-            displayData()
+            $("#add-row").empty();
+            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+            database.ref("trains").off("child_added", displayData);
         }
     }, 60000);
-});
+}
+
+function updateTrain(event) {
+    event.preventDefault();
+    var trainName = $("#update-train-name").val().trim();
+    var destination = $("#update-destination").val().trim();
+    var updateArrival = $("#update-arrival").val().trim();
+    console.log("LOOK!!! =>", frequency);
+    console.log("trainName 2", trainName);
+    console.log("destination 2", destination);
+    console.log("updateArrival 2", updateArrival);
+    var arrivalTimeConverted = moment(updateArrival, "HH:mm").subtract(1, "years");
+    var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
+    var timeRemainder = timeDifference % frequency;
+    var minutesAway = frequency - timeRemainder;
+    var nextArrival = moment().add(minutesAway, "minutes");
+    nextArrival = nextArrival.format("HH:mm");
+    database.ref("trains/" + trainKey).update({
+        name: trainName,
+        destination: destination,
+        frequency: frequency,
+        next_arrival: nextArrival,
+        minutes_away: minutesAway
+    });
+    var trainName = $("#update-train-name").val("");
+    var destination = $("#update-destination").val("");
+    var updateArrival = $("#update-arrival").val("");
+    $("#add-row").empty();
+    database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+    database.ref("trains").off("child_added", displayData);
+}
+
+database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+// database.ref("trains").off("child_added", displayData);
+database.ref("trains").orderByChild("date_added").on("child_added", nextArrivals);
 
 
 $("#submit").on("click", function(event) {
+    // $("#add-row").empty();
     event.preventDefault();
     var trainName = $("#train-name").val().trim();
     var destination = $("#destination").val().trim();
@@ -98,63 +130,66 @@ $("#submit").on("click", function(event) {
     var destination = $("#destination").val("");
     var firstArrival = $("#first-arrival").val("");
     var frequency = $("#frequency").val("");
-});
 
-$(document).on("click", ".btn-danger", function(event) {
-    console.log("This Works!");
-    var trainKey = $(this).attr("id");
-    database.ref("trains/" + trainKey).remove();
-    displayData()
 });
 
 $(document).on("click", ".btn-success", function(event) {
-    console.log("This Works!");
+    // console.log("This Works!");
     event.preventDefault();
     var trainKey = $(this).attr("id");
-    console.log("trainKey", trainKey);
-    database.ref("trains/" + trainKey).once("value", function(snapshot) {
-        var frequency = snapshot.val().frequency;
-        console.log("UPDATE! frequency", frequency);
-        $(document).on("click", "#update-submit", function(event) {
-            console.log("This Works 2!")
-            event.preventDefault();
-            var trainName = $("#update-train-name").val().trim();
-            var destination = $("#update-destination").val().trim();
-            var updateArrival = $("#update-arrival").val().trim();
-            console.log("LOOK!!! =>", frequency);
-            console.log("trainName 2", trainName);
-            console.log("destination 2", destination);
-            console.log("updateArrival 2", updateArrival);
-            var arrivalTimeConverted = moment(updateArrival, "HH:mm").subtract(1, "years");
-            var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
-            var timeRemainder = timeDifference % frequency;
-            var minutesAway = frequency - timeRemainder;
-            var nextArrival = moment().add(minutesAway, "minutes");
-            nextArrival = nextArrival.format("HH:mm");
+    console.log("1st trainKey", trainKey);
+    database.ref("trains/" + trainKey).once("value").then(function(snapshot) {
+            var frequency = snapshot.val().frequency;
+            console.log("1st frequency", frequency);
+            $(document).on("click", "#update-submit", function(event) {
+                event.preventDefault();
+                var trainName = $("#update-train-name").val().trim();
+                var destination = $("#update-destination").val().trim();
+                var updateArrival = $("#update-arrival").val().trim();
+                console.log("2nd trainKey", trainKey);
+                console.log("2nd frequency", frequency);
+                // console.log("trainName 2", trainName);
+                // console.log("destination 2", destination);
+                // console.log("updateArrival 2", updateArrival);
+                var arrivalTimeConverted = moment(updateArrival, "HH:mm").subtract(1, "years");
+                var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
+                var timeRemainder = timeDifference % frequency;
+                console.log("timeRemainder", timeRemainder);
+                var minutesAway = frequency - timeRemainder;
+                console.log("minutesAway", minutesAway);
+                var nextArrival = moment().add(minutesAway, "minutes");
+                nextArrival = nextArrival.format("HH:mm");
             database.ref("trains/" + trainKey).update({
-                name: trainName,
-                destination: destination,
-                frequency: frequency,
-                next_arrival: nextArrival,
-                minutes_away: minutesAway
-            })
+                    name: trainName,
+                    destination: destination,
+                    frequency: frequency,
+                    next_arrival: nextArrival,
+                    minutes_away: minutesAway
+                });
             var trainName = $("#update-train-name").val("");
             var destination = $("#update-destination").val("");
             var updateArrival = $("#update-arrival").val("");
-            displayData()
-        })
-    })
+            $("#add-row").empty();
+            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+            // database.ref("trains").off("child_added", displayData);
+        });
+    });
 });
 
 
 
+// $(document).on("click", ".btn-danger", function(event) {
+//     console.log("This Works!");
+//     var trainKey = $(this).attr("id");
+//     database.ref("trains/" + trainKey).remove();
+//     displayData()
+// });
+
 
 // ----
-
-var now = moment("12:00", "HH:mm").add(30, "minutes"); 
-now = now.format("HH:mm")
-console.log(now)
-
+// var now = moment("12:00", "HH:mm").add(30, "minutes"); 
+// now = now.format("HH:mm")
+// console.log(now)
 // ----
 
 // database.ref("trains/-LqX6bWwvMDm9zIX3-er").on("value", function(snapshot) {
