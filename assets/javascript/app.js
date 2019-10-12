@@ -55,11 +55,11 @@ function nextArrivals(snapshot) {
                 minutes_away: minutesAway,
                 next_arrival: nextArrival
             })
-            $("#add-row").empty();
-            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-            database.ref("trains").off("child_added", displayData);
+            // $("#add-row").empty();
+            // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+            // database.ref("trains").off("child_added", displayData);
         }
-    }, 60000);
+    }, 1000);
 }
 
 function updateTrain(event) {
@@ -84,13 +84,13 @@ function updateTrain(event) {
     var destination = $("#update-destination").val("");
     var updateArrival = $("#update-arrival").val("");
     $("#add-row").empty();
-    database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-    database.ref("trains").off("child_added", displayData);
+    // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+    // database.ref("trains").off("child_added", displayData);
 }
 
 database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-// database.ref("trains").off("child_added", displayData);
 database.ref("trains").orderByChild("date_added").on("child_added", nextArrivals);
+// database.ref("trains").off("child_added", nextArrivals);    
 
 
 $("#submit").on("click", function(event) {
@@ -152,8 +152,8 @@ $(document).on("click", ".btn-success", function(event) {
             });
             $(this).off("click");
             $("#add-row").empty();
-            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-            database.ref("trains").off("child_added", displayData);
+            // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+            // database.ref("trains").off("child_added", displayData);
         })
     })
 });
@@ -162,8 +162,8 @@ $(document).on("click", ".btn-danger", function(event) {
     var trainKey = $(this).attr("id");
     database.ref("trains/" + trainKey).remove();
     $("#add-row").empty();
-    database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-    database.ref("trains").off("child_added", displayData);
+    // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+    // database.ref("trains").off("child_added", displayData);
 });
 
 
