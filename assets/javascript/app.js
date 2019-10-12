@@ -4,10 +4,10 @@ var firebaseConfig = {
     authDomain: "track-the-trains.firebaseapp.com",
     databaseURL: "https://track-the-trains.firebaseio.com",
     projectId: "track-the-trains",
-    storageBucket: "",
+    storageBucket: "track-the-trains.appspot.com",
     messagingSenderId: "786993245325",
     appId: "1:786993245325:web:2a935c8a243842e6d946c4"
-};
+    };
 
 firebase.initializeApp(firebaseConfig);
 
