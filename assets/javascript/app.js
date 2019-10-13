@@ -33,80 +33,51 @@ function displayData(snapshot) {
     $("#add-row").append(row);
 }
 
-
-database.ref("trains").orderByChild("date_added").on("child_added", function(snapshot) {
-    console.log("key", snapshot.key)
-    // console.log("snapshot.val().name", snapshot.val().name);
-    var trainKey = snapshot.key
-    var nextArrival = snapshot.val().next_arrival;
-    var frequency = snapshot.val().frequency; 
-    var minutesAway = snapshot.val().minutes_away;
-    var decrement = setInterval(function() {
-        if (minutesAway > 0) {
-            minutesAway--; 
-            database.ref("trains/" + trainKey).update({
-            minutes_away: minutesAway
-        })
-        $("#add-row").empty();
-        database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-        database.ref("trains").off("child_added", displayData);
-        console.log("if snapshot.val().name", snapshot.val().name)
-        } else {
-            minutesAway = frequency;
-            nextArrival = moment(nextArrival, "HH:mm").add(frequency, "minutes");
-            nextArrival = nextArrival.format("HH:mm")
-            database.ref("trains/" + trainKey).update({
-            minutes_away: minutesAway,
-            next_arrival: nextArrival
-        })
-        $("#add-row").empty();
-        database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-        database.ref("trains").off("child_added", displayData);
-        }
-    }, 1000) 
-    database.ref("trains").on("value", function(snapshot) {
-        console.log("snapshot.val()", snapshot.val())
-        if (snapshot.val()) {
-            console.log("val")
-        } else {
-            console.log("no val")
-            clearInterval(decrement);
-        }
-    })
-})
-
-
-
-// function nextArrivals(snapshot) {
-//     var trainKey = snapshot.key
+// database.ref("trains").orderByChild("date_added").on("child_added", function(snapshot) {
+//     console.log("key", snapshot.key)
 //     var nextArrival = snapshot.val().next_arrival;
 //     var frequency = snapshot.val().frequency; 
 //     var minutesAway = snapshot.val().minutes_away;
+//     console.log("minutesAway", minutesAway);
+//     if (typeof snapshot.val().name !== "undefined") {
 //     var decrement = setInterval(function() {
+//         console.log("snapshot.val().name", snapshot.val().name)
 //         if (minutesAway > 0) {
+//             if (typeof snapshot.val().name !== "undefined") {
 //             minutesAway--; 
-//             database.ref("trains/" + trainKey).update({
-//                 minutes_away: minutesAway
-//             })
-//             // $("#add-row").empty();
-//             database.ref("trains").off("child_added", nextArrivals);
+//             console.log("IF minutesAway", minutesAway)
+//             database.ref("trains/" + snapshot.key).update({
+//             minutes_away: minutesAway
+//         })
+//         }
+//         $("#add-row").empty();
+//         database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+//         database.ref("trains").off("child_added", displayData);
 //         } else {
+//             if (typeof snapshot.val().name !== "undefined") {
 //             minutesAway = frequency;
+//             console.log("ELSE minutesAway", minutesAway)
 //             nextArrival = moment(nextArrival, "HH:mm").add(frequency, "minutes");
 //             nextArrival = nextArrival.format("HH:mm")
-//             database.ref("trains/" + trainKey).update({
-//                 minutes_away: minutesAway,
-//                 next_arrival: nextArrival
-//             })
-//             // $("#add-row").empty();
-//             // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-//             // database.ref("trains").off("child_added", displayData);
+//             database.ref("trains/" + snapshot.key).update({
+//             minutes_away: minutesAway,
+//             next_arrival: nextArrival
+//         })
 //         }
-//     }, 1000);
-// }
-
-database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-// database.ref("trains").off("child_added", displayData);
+//         $("#add-row").empty();
+//         database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+//         database.ref("trains").off("child_added", displayData);
+//         }
+//     }, 1000) }
+//     database.ref("trains").on("value", function(snapshot) {
+//         if (snapshot.val()) {
+//             console.log("val")
+//         } else {
+//             console.log("no val")
+//             clearInterval(decrement);
+//         }
+//     })
+// });
 
 
 $("#submit").on("click", function(event) {
@@ -181,5 +152,7 @@ $(document).on("click", ".btn-danger", function(event) {
     database.ref("trains").off("child_added", displayData);
 });
 
+database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+// database.ref("trains").off("child_added", displayData);
 
 
