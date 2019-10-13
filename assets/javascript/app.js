@@ -33,7 +33,10 @@ function displayData(snapshot) {
     $("#add-row").append(row);
 }
 
-function nextArrivals(snapshot) {
+
+database.ref("trains").orderByChild("date_added").on("child_added", function(snapshot) {
+    console.log("key", snapshot.key)
+    // console.log("snapshot.val().name", snapshot.val().name);
     var trainKey = snapshot.key
     var nextArrival = snapshot.val().next_arrival;
     var frequency = snapshot.val().frequency; 
@@ -42,55 +45,68 @@ function nextArrivals(snapshot) {
         if (minutesAway > 0) {
             minutesAway--; 
             database.ref("trains/" + trainKey).update({
-                minutes_away: minutesAway
-            })
-            $("#add-row").empty();
-            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-            database.ref("trains").off("child_added", displayData);
+            minutes_away: minutesAway
+        })
+        $("#add-row").empty();
+        database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+        database.ref("trains").off("child_added", displayData);
+        console.log("if snapshot.val().name", snapshot.val().name)
         } else {
             minutesAway = frequency;
             nextArrival = moment(nextArrival, "HH:mm").add(frequency, "minutes");
             nextArrival = nextArrival.format("HH:mm")
             database.ref("trains/" + trainKey).update({
-                minutes_away: minutesAway,
-                next_arrival: nextArrival
-            })
-            // $("#add-row").empty();
-            // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-            // database.ref("trains").off("child_added", displayData);
+            minutes_away: minutesAway,
+            next_arrival: nextArrival
+        })
+        $("#add-row").empty();
+        database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+        database.ref("trains").off("child_added", displayData);
         }
-    }, 1000);
-}
+    }, 1000) 
+    database.ref("trains").on("value", function(snapshot) {
+        console.log("snapshot.val()", snapshot.val())
+        if (snapshot.val()) {
+            console.log("val")
+        } else {
+            console.log("no val")
+            clearInterval(decrement);
+        }
+    })
+})
 
-function updateTrain(event) {
-    event.preventDefault();
-    var trainName = $("#update-train-name").val().trim();
-    var destination = $("#update-destination").val().trim();
-    var updateArrival = $("#update-arrival").val().trim();
-    var arrivalTimeConverted = moment(updateArrival, "HH:mm").subtract(1, "years");
-    var timeDifference = moment().diff(moment(arrivalTimeConverted), "minutes");
-    var timeRemainder = timeDifference % frequency;
-    var minutesAway = frequency - timeRemainder;
-    var nextArrival = moment().add(minutesAway, "minutes");
-    nextArrival = nextArrival.format("HH:mm");
-    database.ref("trains/" + trainKey).update({
-        name: trainName,
-        destination: destination,
-        frequency: frequency,
-        next_arrival: nextArrival,
-        minutes_away: minutesAway
-    });
-    var trainName = $("#update-train-name").val("");
-    var destination = $("#update-destination").val("");
-    var updateArrival = $("#update-arrival").val("");
-    $("#add-row").empty();
-    // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-    // database.ref("trains").off("child_added", displayData);
-}
+
+
+// function nextArrivals(snapshot) {
+//     var trainKey = snapshot.key
+//     var nextArrival = snapshot.val().next_arrival;
+//     var frequency = snapshot.val().frequency; 
+//     var minutesAway = snapshot.val().minutes_away;
+//     var decrement = setInterval(function() {
+//         if (minutesAway > 0) {
+//             minutesAway--; 
+//             database.ref("trains/" + trainKey).update({
+//                 minutes_away: minutesAway
+//             })
+//             // $("#add-row").empty();
+//             database.ref("trains").off("child_added", nextArrivals);
+//         } else {
+//             minutesAway = frequency;
+//             nextArrival = moment(nextArrival, "HH:mm").add(frequency, "minutes");
+//             nextArrival = nextArrival.format("HH:mm")
+//             database.ref("trains/" + trainKey).update({
+//                 minutes_away: minutesAway,
+//                 next_arrival: nextArrival
+//             })
+//             // $("#add-row").empty();
+//             // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+//             // database.ref("trains").off("child_added", displayData);
+//         }
+//     }, 1000);
+// }
 
 database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-database.ref("trains").orderByChild("date_added").on("child_added", nextArrivals);
-// database.ref("trains").off("child_added", nextArrivals);    
+// database.ref("trains").off("child_added", displayData);
 
 
 $("#submit").on("click", function(event) {
@@ -116,7 +132,6 @@ $("#submit").on("click", function(event) {
         minutes_away: minutesAway,
         date_added: firebase.database.ServerValue.TIMESTAMP
     });
-
     var trainName = $("#train-name").val("");
     var destination = $("#destination").val("");
     var firstArrival = $("#first-arrival").val("");
@@ -152,8 +167,8 @@ $(document).on("click", ".btn-success", function(event) {
             });
             $(this).off("click");
             $("#add-row").empty();
-            // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-            // database.ref("trains").off("child_added", displayData);
+            database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+            database.ref("trains").off("child_added", displayData);
         })
     })
 });
@@ -162,8 +177,8 @@ $(document).on("click", ".btn-danger", function(event) {
     var trainKey = $(this).attr("id");
     database.ref("trains/" + trainKey).remove();
     $("#add-row").empty();
-    // database.ref("trains").orderByChild("date_added").on("child_added", displayData);
-    // database.ref("trains").off("child_added", displayData);
+    database.ref("trains").orderByChild("date_added").on("child_added", displayData);
+    database.ref("trains").off("child_added", displayData);
 });
 
 
